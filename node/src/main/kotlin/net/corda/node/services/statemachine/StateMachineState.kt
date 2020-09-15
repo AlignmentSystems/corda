@@ -270,8 +270,6 @@ data class CheckpointState(
  */
 sealed class SessionState {
 
-    abstract val deduplicationSeed: String
-
     /**
      * the sender UUID last seen in this session, if there was one.
      */
@@ -327,15 +325,12 @@ sealed class SessionState {
             val destination: Destination,
             val initiatingSubFlow: SubFlow.Initiating,
             val sourceSessionId: SessionId,
-            val additionalEntropy: Long,
             val hasBeenAcknowledged: Pair<Party, ConfirmSessionMessage>?,
             val hasBeenRejected: RejectSessionMessage?,
             override val receivedMessages: Map<Int, ExistingSessionMessagePayload>,
             override val lastSenderUUID: String?,
             override val lastSenderSeqNo: Long?
-    ) : SessionState() {
-        override val deduplicationSeed: String get() = "R-${sourceSessionId.value}-$additionalEntropy"
-    }
+    ) : SessionState()
 
     /**
      * We have sent the initialisation message but have not yet received a confirmation.
@@ -347,7 +342,6 @@ sealed class SessionState {
     data class Initiating(
             val bufferedMessages: List<Pair<MessageIdentifier, ExistingSessionMessagePayload>>,
             val rejectionError: FlowError?,
-            override val deduplicationSeed: String,
             val nextSendingSeqNumber: Int,
             val shardId: String,
             override val receivedMessages: Map<Int, ExistingSessionMessagePayload>,
@@ -383,7 +377,6 @@ sealed class SessionState {
             val peerFlowInfo: FlowInfo,
             val otherSideErrored: Boolean,
             val peerSinkSessionId: SessionId,
-            override val deduplicationSeed: String,
             val nextSendingSeqNumber: Int,
             val lastProcessedSeqNumber: Int,
             val shardId: String,
